@@ -33,14 +33,22 @@ step2:
     mov sp, 0x7c00
     sti ; Enables interrupts
 
-    mov word[ss:0x00], handle_zero
-    mov word[ss:0x02], 0x7c0
+    mov ah, 2   ; READ SECTOR COMMAND
+    mov al, 1   ; ONE SECTOR TO READ
+    mov ch, 0   ; CYLINDER LOW EIGHT BITS
+    mov cl, 2   ; READ SECTOR 2
+    mov dh, 0   ; HEAD NUMBER
+    mov bx, buffer
+    int 0x13
+    jc error    ; Jump if carry flag is set to 1
 
-    mov word[ss:0x04], handle_one
-    mov word[ss:0x06], 0x7c0
-    int 1
+    mov si, buffer
+    call print
+    
+    jmp $
 
-    mov si, message
+error:
+    mov si, error_message
     call print
     jmp $
 
@@ -60,7 +68,9 @@ print_char:
     int 0x10
     ret
 
-message: db 'Hello World!', 0
+error_message: db 'Failed to load sector', 0
 
 times 510-($ - $$) db 0
 dw 0xAA55
+
+buffer:
