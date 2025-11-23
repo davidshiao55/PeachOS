@@ -1,9 +1,17 @@
 ORG 0
 BITS 16
 
-jmp 0x7C0: start ; Set code segment to 0x7C0
+; Bios parameter block, prevented from being overwritten by BIOS
+_start:
+    jmp short start
+    nop
+times 33 db 0 ; padding the bios parameter block
+
 
 start:
+    jmp 0x7C0: step2 ; Set code segment to 0x7C0
+
+step2:
     cli ; Disable Interrupts for critical setup
     ; manually set up segment registers, incase BIOS set them differently the code won't work as expected
     mov ax, 0x07C0  ; Can't directly move to segment registers
