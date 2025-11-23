@@ -11,20 +11,6 @@ times 33 db 0 ; padding the bios parameter block
 start:
     jmp 0x7C0: step2 ; Set code segment to 0x7C0
 
-handle_zero:
-    mov ah, 0xe
-    mov al, 'A'
-    mov bx, 0x00
-    int 0x10
-    iret
-
-handle_one:
-    mov ah, 0xe
-    mov al, 'B'
-    mov bx, 0x00
-    int 0x10
-    iret
-
 step2:
     cli ; Disable Interrupts for critical setup
     ; manually set up segment registers, incase BIOS set them differently the code won't work as expected
@@ -36,20 +22,24 @@ step2:
     mov ss, ax
     mov sp, 0x7C00 
     sti ; Enables Interrupts
-    
-    ; Set up interrupt vector 0 to our handler, use ss instead of ds because ss points to 0x00
-    mov word[ss:0x00], handle_zero  ; offset
-    mov word[ss:0x02], 0x7c0    ; segment
-    ; Set up interrupt vector 1 to our handler
-    mov word[ss:0x04], handle_one   ; offset
-    mov word[ss:0x06], 0x7c0    ; segment
-    
-    int 0
-    int 1
 
-    mov si, message
+    mov ah, 2 ; Read sector command
+    mov al, 1 ; One sector to read
+    mov ch, 0 ; Cylinder low eight bits
+    mov cl, 2 ; Read sector 2
+    mov dh, 0 ; Head number
+    mov bx, buffer ; Buffer to store the read data
+    int 0x13 ; BIOS disk interrupt
+    jc error ; Jump if carry flag is set (error)
+    
+    mov si, buffer
     call print
-    jmp $   ; infinite loop
+    jmp $ ; Infinite loop
+
+error:
+    mov si, error_message
+    call print
+    jmp $   
 
 print:
     mov bx, 0
@@ -67,7 +57,9 @@ print_char:
     int 0x10    ;   invoke BIOS teletype function
     ret
 
-message: db 'Hello World!', 0   ; null-terminated string
+error_message: db "Failed to load sector!", 0
 
 times 510-($-$$) db 0 ; pad zero till 510 bytes
 dw 0xAA55 ; little-endian boot signature 55AA
+
+buffer:
