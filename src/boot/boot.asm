@@ -113,7 +113,7 @@ ata_lba_read:
     ; Read all sectors into memory
 .next_sector:
     push ecx
-
+    ; Checking if we need to read
 .try_again:
     mov dx, 0x1F7
     in al, dx

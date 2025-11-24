@@ -1,5 +1,7 @@
 [BITS 32]
 global _start
+extern kernel_main
+
 CODE_SEG equ 0x08
 DATA_SEG equ 0x10
 
@@ -18,6 +20,8 @@ _start:
     or al, 0x02
     out 0x92, al
 
+    call kernel_main
+    
     jmp $
 
 times 512-($-$$) db 0 ; pad zero till 512 bytes to avoid alighment issues with C
