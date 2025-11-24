@@ -19,3 +19,5 @@ _start:
     out 0x92, al
 
     jmp $
+
+times 512-($-$$) db 0 ; pad zero till 512 bytes to avoid alighment issues with C

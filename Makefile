@@ -1,8 +1,7 @@
 FILES = ./build/kernel.asm.o
 
 all: ./bin/boot.bin ./bin/kernel.bin
-	rm ./bin/os.bin
-	dd if=./bin/boot.bin >> ./bin/os.bin # bootloader in the first sector
+	dd if=./bin/boot.bin > ./bin/os.bin # bootloader in the first sector
 	dd if=./bin/kernel.bin >> ./bin/os.bin	# kernel after bootloader
 	dd if=/dev/zero bs=512 count=100 >> ./bin/os.bin # pad the rest with zeros
 
@@ -16,4 +15,4 @@ all: ./bin/boot.bin ./bin/kernel.bin
 ./build/kernel.asm.o: ./src/kernel.asm
 	nasm -f elf -g ./src/kernel.asm -o ./build/kernel.asm.o
 clean:
-	rm ./bin/boot.bin
+	rm ./bin/boot.bin ./bin/kernel.bin ./bin/os.bin ./build/kernelfull.o $(FILES)
