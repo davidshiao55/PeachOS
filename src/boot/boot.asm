@@ -33,7 +33,6 @@ step2:
     mov cr0, eax
     jmp CODE_SEG:load32
 
-
 ; GDT description structure
 gdt_start:
 gdt_null:
@@ -66,15 +65,69 @@ gdt_descriptor:
 
 [BITS 32]
 load32:
-    mov ax, DATA_SEG
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov ebp, 0x00200000
-    mov esp, ebp
-    jmp $
+    mov eax, 1  ; start sector
+    mov ecx, 100    ; number of sectors to read
+    mov edi, 0x0100000  ; memory address to read to
+    call ata_lba_read
+    jmp CODE_SEG:0x0100000 ; jump to loaded code
+
+ata_lba_read:
+    mov ebx, eax  ; backup the LBA
+    ; Send the highest 8 bits of LBA to the hard disk controller
+    shr eax, 24
+    or eax, 0xE0 ; Set the LBA mode and master drive
+    mov dx, 0x1F6
+    out dx, al
+    ; Finish sending the highest 8 bits of LBA
+    
+    ; Send the total sectors to read
+    mov eax, ecx
+    mov dx, 0x1F2
+    out dx, al 
+    ; Finish sending total sectors to read
+
+    ; Send more bits of the LBA
+    mov eax, ebx ; restore LBA
+    mov dx, 0x1F3
+    out dx, al
+    ; Finish sending more bits of the LBA
+
+    ; Send more bits of the LBA
+    mov dx, 0x1F4
+    mov eax, ebx ; restore LBA
+    shr eax, 8
+    out dx, al
+    ; Finish sending more bits of the LBA
+
+    ; Sned upper 16 bits of the LBA
+    mov dx, 0x1F5
+    mov eax, ebx ; restore LBA
+    shr eax, 16
+    out dx, al
+    ; Finish sending upper 16 bits of the LBA
+
+    mov dx, 0x1F7
+    mov al, 0x20
+    out dx, al
+
+    ; Read all sectors into memory
+.next_sector:
+    push ecx
+
+.try_again:
+    mov dx, 0x1F7
+    in al, dx
+    test al, 0x08
+    jz .try_again
+
+    ; We need to read 256 words at a time
+    mov ecx, 256
+    mov dx, 0x1F0
+    rep insw
+    pop ecx
+    loop .next_sector
+    ; End of reading sectors
+    ret
 
 times 510-($-$$) db 0 ; pad zero till 510 bytes
 dw 0xAA55 ; little-endian boot signature 55AA
