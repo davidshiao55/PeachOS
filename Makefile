@@ -1,5 +1,5 @@
 all:
-	nasm -f bin boot.asm -o boot.bin
-	# add a message to the second sector and pad to 512 bytes
-	dd if=message.txt >> boot.bin
-	dd if=/dev/zero bs=512 count=1 >> boot.bin
+	nasm -f bin src/boot/boot.asm -o bin/boot.bin
+
+clean:
+	rm ./bin/boot.bin
