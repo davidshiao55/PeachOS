@@ -79,17 +79,18 @@ void kernel_main()
     // Switch to kernel paging chunk
     paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
 
+    char *ptr = kzalloc(4096);
+    paging_set(paging_4gb_chunk_get_directory(kernel_chunk), (void *)0x1000, (uint32_t)ptr | PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITABLE);
+
     // Enable paging
     enable_paging();
 
+    char *ptr2 = (char *)0x1000;
+    ptr2[0] = 'A';
+    ptr2[1] = 'B';
+    print(ptr2);
+    print(ptr);
+
     // Enable interrupts. Only after IDT is initialized and paging is enable, or system may crash
     enable_interrupts();
-
-    void *ptr = kmalloc(50);
-    void *ptr2 = kmalloc(5000);
-    void *ptr3 = kmalloc(5600);
-    kfree(ptr);
-    void *ptr4 = kmalloc(50);
-    if (ptr || ptr2 || ptr3 || ptr4) {
-    }
 }
