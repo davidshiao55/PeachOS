@@ -66,5 +66,6 @@ void kernel_main()
     // Initialize the IDT
     idt_init();
 
-    outb(0x60, 0xff);
+    // Enable interrupts. Only after IDT is initialized, or system may crash
+    enable_interrupts();
 }
