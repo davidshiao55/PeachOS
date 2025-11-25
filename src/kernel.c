@@ -1,9 +1,11 @@
 #include "kernel.h"
 #include "disk/disk.h"
+#include "fs/pparser.h"
 #include "idt/idt.h"
 #include "io/io.h"
 #include "memory/heap/kheap.h"
 #include "memory/paging/paging.h"
+#include "string/string.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -46,14 +48,6 @@ void terminal_initialize()
     }
 }
 
-size_t strlen(const char *str)
-{
-    size_t len = 0;
-    while (str[len])
-        len++;
-    return len;
-}
-
 void print(const char *str)
 {
     for (int i = 0; i < strlen(str); i++) {
@@ -88,4 +82,8 @@ void kernel_main()
 
     // Enable interrupts. Only after IDT is initialized and paging is enable, or system may crash
     enable_interrupts();
+
+    struct path_root *root_path = pathparser_parse("0:/bin/shell.exe", NULL);
+    if (root_path) {
+    }
 }
