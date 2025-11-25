@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "idt/idt.h"
 #include "io/io.h"
+#include "memory/heap/kheap.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -63,9 +64,20 @@ void kernel_main()
     terminal_initialize();
     print("Hello, World!\n");
 
+    // Initialize the heap
+    kheap_init();
+
     // Initialize the IDT
     idt_init();
 
     // Enable interrupts. Only after IDT is initialized, or system may crash
     enable_interrupts();
+
+    void *ptr = kmalloc(50);
+    void *ptr2 = kmalloc(5000);
+    void *ptr3 = kmalloc(5600);
+    kfree(ptr);
+    void *ptr4 = kmalloc(50);
+    if (ptr || ptr2 || ptr3 || ptr4) {
+    }
 }

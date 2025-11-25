@@ -11,3 +11,5 @@ sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev t
 # link kernel full for gdb debugging
 add-symbol-file build/kernelfull.o 0x100000
 target remote | qemu-system-x86_64 -hda bin/os.bin -S -gdb stdio
+# debugging 32 bit kernel in gdb
+target remote | qemu-system-i386 -hda ./bin/os.bin -S -gdb stdio
