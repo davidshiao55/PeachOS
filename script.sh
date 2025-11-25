@@ -3,7 +3,7 @@ nasm -f bin src/boot/boot.asm -o bin/boot.bin
 # disassemble binary
 ndisasm bin/boot.bin 
 # run in qemu
-qemu-system-x86_64 -hda bin/boot.bin
+qemu-system-x86_64 -hda bin/os.bin
 # or for gdb debugging
 target remote | qemu-system-x86_64 -hda bin/boot.bin -S -gdb stdio
 # cross compile dependency installation (for ubuntu)
