@@ -88,7 +88,10 @@ void kernel_main()
     // Enable interrupts. Only after IDT is initialized and paging is enable, or system may crash
     enable_interrupts();
 
-    char buf[20];
-    strcpy(buf, "hello world");
-    print(buf);
+    int fd = fopen("0:/hello.txt", "r");
+    if (fd) {
+        print("We opened hello.txt\n");
+    }
+    while (1) {
+    }
 }
