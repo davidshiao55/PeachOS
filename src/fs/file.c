@@ -163,6 +163,12 @@ out:
     return res;
 }
 
+static void file_free_descriptor(struct file_descriptor *desc)
+{
+    file_descriptors[desc->index - 1] = 0;
+    kfree(desc);
+}
+
 int fstat(int fd, struct file_stat *stat)
 {
     int res = 0;
@@ -185,6 +191,9 @@ int fclose(int fd)
         goto out;
     }
     res = desc->filesystem->close(desc->private_data);
+    if (res == PEACHOS_ALL_OK) {
+        file_free_descriptor(desc);
+    }
 out:
     return res;
 }
