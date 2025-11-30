@@ -66,6 +66,7 @@ static int file_new_descriptor(struct file_descriptor **desc_out)
             file_descriptors[i] = desc;
             *desc_out = desc;
             res = 0;
+            break;
         }
     }
 
