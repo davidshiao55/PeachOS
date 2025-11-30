@@ -59,7 +59,7 @@ struct file_descriptor {
 };
 
 struct file_stat {
-    FILE_STAT_FLAGS falgs;
+    FILE_STAT_FLAGS flags;
     uint32_t filesize;
 };
 
