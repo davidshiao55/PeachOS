@@ -9,7 +9,7 @@
 #include "string/string.h"
 
 struct filesystem *filesystems[PEACHOS_MAX_FILESYSTEMS];
-struct file_descriptor *file_descriptors[PEACHOS_MAX_DESCRIPTORS];
+struct file_descriptor *file_descriptors[PEACHOS_MAX_FILE_DESCRIPTORS];
 
 static struct filesystem **fs_get_free_filesystem()
 {
@@ -57,7 +57,7 @@ void fs_init()
 static int file_new_descriptor(struct file_descriptor **desc_out)
 {
     int res = -ENOMEM;
-    for (int i = 0; i < PEACHOS_MAX_DESCRIPTORS; i++) {
+    for (int i = 0; i < PEACHOS_MAX_FILE_DESCRIPTORS; i++) {
         // find uninitialize file descriptor
         if (file_descriptors[i] == 0) {
             struct file_descriptor *desc = kzalloc(sizeof(struct file_descriptor));
@@ -75,7 +75,7 @@ static int file_new_descriptor(struct file_descriptor **desc_out)
 
 static struct file_descriptor *file_get_descriptor(int fd)
 {
-    if (fd <= 0 || fd >= PEACHOS_MAX_DESCRIPTORS) {
+    if (fd <= 0 || fd >= PEACHOS_MAX_FILE_DESCRIPTORS) {
         return 0;
     }
     int index = fd - 1;

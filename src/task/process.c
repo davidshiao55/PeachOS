@@ -109,7 +109,7 @@ int process_load_for_slot(const char *filename, struct process **process, int pr
     }
 
     _process = kzalloc(sizeof(struct process));
-    if (_process) {
+    if (!_process) {
         res = -ENOMEM;
         goto out;
     }
@@ -134,6 +134,7 @@ int process_load_for_slot(const char *filename, struct process **process, int pr
     task = task_new(_process);
     if (ERROR_I(task) == 0) {
         res = ERROR_I(task);
+        goto out;
     }
     _process->task = task;
 

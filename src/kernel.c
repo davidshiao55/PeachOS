@@ -10,7 +10,10 @@
 #include "memory/heap/kheap.h"
 #include "memory/memory.h"
 #include "memory/paging/paging.h"
+#include "status.h"
 #include "string/string.h"
+#include "task/process.h"
+#include "task/task.h"
 #include "task/tss.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -104,7 +107,7 @@ void kernel_main()
 
     // Setup the TSS
     memset(&tss, 0x00, sizeof(tss));
-    tss.esp = 0x600000; // Kernel stack
+    tss.esp0 = 0x600000; // Kernel stack
     tss.ss0 = KERNEL_DATA_SELECTOR;
 
     // Load the TSS
@@ -119,16 +122,12 @@ void kernel_main()
     // Enable paging
     enable_paging();
 
-    // Enable interrupts. Only after IDT is initialized and paging is enable, or system may crash
-    enable_interrupts();
-
-    int fd = fopen("0:/hello.txt", "r");
-    if (fd) {
-        struct file_stat s;
-        fstat(fd, &s);
-        fclose(fd);
-        print("testing\n");
+    struct process *process = 0;
+    int res = process_load("0:/blank.bin", &process);
+    if (res != PEACHOS_ALL_OK) {
+        panic("Failed to load blank.bin\n");
     }
-    while (1) {
-    }
+    task_run_first_ever_task();
+    while (1)
+        ;
 }

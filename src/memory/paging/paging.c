@@ -8,7 +8,7 @@ static uint32_t *current_directory = 0;
 
 struct paging_4gb_chunk *paging_new_4gb(uint8_t flags)
 {
-    uint32_t *direcotry = kzalloc(sizeof(uint32_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
+    uint32_t *directory = kzalloc(sizeof(uint32_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
     int offset = 0;
     for (int i = 0; i < PAGING_TOTAL_ENTRIES_PER_TABLE; i++) {
         uint32_t *entry = kzalloc(sizeof(uint32_t) * PAGING_TOTAL_ENTRIES_PER_TABLE);
@@ -16,11 +16,11 @@ struct paging_4gb_chunk *paging_new_4gb(uint8_t flags)
             entry[b] = (offset + (b * PAGING_PAGE_SIZE)) | flags;
         }
         offset += (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE);
-        direcotry[i] = (uint32_t)entry | flags | PAGING_IS_WRITABLE;
+        directory[i] = (uint32_t)entry | flags | PAGING_IS_WRITABLE;
     }
 
     struct paging_4gb_chunk *chunk_4gb = kzalloc(sizeof(struct paging_4gb_chunk));
-    chunk_4gb->directory_entry = direcotry;
+    chunk_4gb->directory_entry = directory;
     return chunk_4gb;
 }
 
@@ -34,7 +34,7 @@ void paging_free_4gb(struct paging_4gb_chunk *chunk)
 {
     for (int i = 0; i < 1024; i++) {
         uint32_t entry = chunk->directory_entry[i];
-        uint32_t *table = (uint32_t *)(entry * 0xFFFF0000); // Get the page table address
+        uint32_t *table = (uint32_t *)(entry & 0xFFFF0000); // Get the page table address
         kfree(table);
     }
     kfree(chunk->directory_entry);
@@ -99,15 +99,19 @@ int paging_map_to(uint32_t *directory, void *virt, void *phys, void *phys_end, i
     int res = 0;
     if ((uint32_t)virt % PAGING_PAGE_SIZE) {
         res = -EINVARG;
+        goto out;
     }
     if ((uint32_t)phys % PAGING_PAGE_SIZE) {
         res = -EINVARG;
+        goto out;
     }
     if ((uint32_t)phys_end % PAGING_PAGE_SIZE) {
         res = -EINVARG;
+        goto out;
     }
     if ((uint32_t)phys_end < (uint32_t)phys) {
         res = -EINVARG;
+        goto out;
     }
 
     uint32_t total_bytes = phys_end - phys;
@@ -135,5 +139,5 @@ int paging_set(uint32_t *directory, void *virt, uint32_t val)
     uint32_t *table = (uint32_t *)(entry & 0xFFFFF000); // extract address
     table[table_index] = val;
 
-    return res;
+    return 0;
 }
