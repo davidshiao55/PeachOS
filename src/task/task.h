@@ -2,6 +2,7 @@
 #define TASK_H
 
 #include "config.h"
+#include "idt/idt.h"
 #include "memory/paging/paging.h"
 #include "process.h"
 
@@ -44,5 +45,6 @@ void user_registers();
 int task_switch(struct task *task);
 int task_page();
 void task_run_first_ever_task();
+void task_current_save_state(struct interrupt_frame *frame);
 
 #endif
