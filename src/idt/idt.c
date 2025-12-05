@@ -76,7 +76,7 @@ void *isr80h_handler_command(int command, struct interrupt_frame *frame)
     void *result = 0;
 
     // Invalid command
-    if (command <= 0 || command >= PEACHOS_MAX_ISR80H_COMMANDS) {
+    if (command < 0 || command >= PEACHOS_MAX_ISR80H_COMMANDS) {
         return 0;
     }
 
