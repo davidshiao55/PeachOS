@@ -12,6 +12,10 @@ SECTIONS
         *(.rodata)
     
     }
+    .asm : ALIGN(4096)
+    {
+        *(.asm)
+    }
     .data : ALIGN(4096)
     {
         *(.data)
@@ -20,9 +24,5 @@ SECTIONS
     {
         *(COMMON)
         *(.bss)
-    }
-    .asm : ALIGN(4096)
-    {
-        *(.asm)
     }
 }

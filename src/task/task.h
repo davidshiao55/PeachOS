@@ -4,7 +4,8 @@
 #include "config.h"
 #include "idt/idt.h"
 #include "memory/paging/paging.h"
-#include "process.h"
+
+struct process;
 
 struct registers {
     uint32_t edi;

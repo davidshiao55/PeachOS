@@ -7,7 +7,6 @@
 #include "memory/paging/paging.h"
 #include "status.h"
 #include "string/string.h"
-#include "task/task.h"
 
 // The current process that is running
 struct process *current_process = 0;

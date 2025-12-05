@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "kernel.h"
+#include "task/task.h"
 #include <stdint.h>
 
 struct process {
