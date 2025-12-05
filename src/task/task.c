@@ -128,6 +128,13 @@ int task_page()
     return 0;
 }
 
+int task_page_task(struct task *task)
+{
+    user_registers();
+    paging_switch(task->page_directory);
+    return 0;
+}
+
 void task_run_first_ever_task()
 {
     if (!current_task) {
@@ -183,4 +190,19 @@ out:
         return ERROR(res);
     }
     return task;
+}
+
+void *task_get_stack_item(struct task *task, int index)
+{
+    void *result = 0;
+    // Get task stack pointer (virtual address)
+    uint32_t *sp_ptr = (uint32_t *)task->registers.esp;
+    // Switch to the given task page
+    task_page_task(task);
+
+    result = (void *)sp_ptr[index];
+
+    // Switch back to kernel page
+    kernel_page();
+    return result;
 }
