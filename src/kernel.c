@@ -8,6 +8,7 @@
 #include "idt/idt.h"
 #include "io/io.h"
 #include "isr80h/isr80h.h"
+#include "keyboard/keyboard.h"
 #include "memory/heap/kheap.h"
 #include "memory/memory.h"
 #include "memory/paging/paging.h"
@@ -129,7 +130,11 @@ void kernel_main()
     // Enable paging
     enable_paging();
 
+    // Register the kernel commands
     isr80h_register_commands();
+
+    // Initialize all the system keyboards
+    keyboard_init();
 
     struct process *process = 0;
     int res = process_load("0:/blank.bin", &process);
