@@ -141,3 +141,13 @@ int paging_set(uint32_t *directory, void *virt, uint32_t val)
 
     return 0;
 }
+
+uint32_t paging_get(uint32_t *directory, void *virt)
+{
+    uint32_t direcotory_index = 0;
+    uint32_t table_index = 0;
+    paging_get_indexes(virt, &direcotory_index, &table_index);
+    uint32_t entry = directory[direcotory_index];
+    uint32_t *table = (uint32_t *)(entry & 0xFFFFF000);
+    return table[table_index];
+}

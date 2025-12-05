@@ -2,7 +2,9 @@
 #include "kernel.h"
 #include "memory/heap/kheap.h"
 #include "memory/memory.h"
+#include "memory/paging/paging.h"
 #include "status.h"
+#include "string/string.h"
 
 // The current task that is running
 struct task *current_task = 0;
@@ -72,6 +74,42 @@ void task_save_state(struct task *task, struct interrupt_frame *frame)
     task->registers.edi = frame->edi;
     task->registers.edx = frame->edx;
     task->registers.esi = frame->esi;
+}
+
+int copy_string_from_task(struct task *task, void *virtual, void *phys, int max)
+{
+    if (max >= PAGING_PAGE_SIZE) {
+        return -EINVARG;
+    }
+    int res = 0;
+
+    // Create a shared memory between task and kernel
+    char *tmp = kzalloc(max);
+    if (!tmp) {
+        res = -ENOMEM;
+        goto out;
+    }
+    uint32_t *task_directory = task->page_directory->directory_entry;
+    uint32_t old_entry = paging_get(task_directory, tmp);
+    // Map the shared memory linearly, so task can see the memory
+    paging_map(task->page_directory, tmp, tmp, PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+    paging_switch(task->page_directory);
+    // Copy the string from task virtual address to the shared memory space
+    strncpy(tmp, virtual, max);
+    kernel_page();
+    // Restore the task entry
+    res = paging_set(task_directory, tmp, old_entry);
+    if (res < 0) {
+        res = -EIO;
+        goto out_free;
+    }
+    // Copy the string from shared memory space, to the physical address
+    strncpy(phys, tmp, max);
+
+out_free:
+    kfree(tmp);
+out:
+    return res;
 }
 
 void task_current_save_state(struct interrupt_frame *frame)
