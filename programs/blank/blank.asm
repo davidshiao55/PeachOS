@@ -3,13 +3,14 @@ section .asm
 global _start
 
 _start:
+_loop:
     call getkey ; Wait for keypresh and output a message
-    push message
-    mov eax, 1
+    push eax
+    mov eax, 3  ; Command put char
     int 0x80
     add esp, 4
 
-    jmp $
+    jmp _loop
 
 getkey:
     mov eax, 2  ; Command getkey
