@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include "classic.h"
 #include "kernel.h"
 #include "status.h"
 #include "task/process.h"
@@ -6,10 +7,6 @@
 
 static struct keyboard *keyboard_list_head = 0;
 static struct keyboard *keyboard_list_last = 0;
-
-void keyboard_init()
-{
-}
 
 int keyboard_insert(struct keyboard *keyboard)
 {
@@ -29,6 +26,11 @@ int keyboard_insert(struct keyboard *keyboard)
     res = keyboard->init();
 out:
     return res;
+}
+
+void keyboard_init()
+{
+    keyboard_insert(classic_init());
 }
 
 static int keyboard_get_tail_index(struct process *process)

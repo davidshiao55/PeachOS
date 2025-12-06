@@ -3,11 +3,16 @@
 #include "io/io.h"
 #include "kernel.h"
 #include "memory/memory.h"
+#include "status.h"
 #include "task/task.h"
 
 struct idt_descr idt_descriptors[PEACHOS_TOTAL_INTERRUPTS];
 struct idtr_descr idtr_descriptor;
 
+// Will be fill in by the assembly
+extern void *interrupt_pointer_table[PEACHOS_TOTAL_INTERRUPTS];
+
+static INTERRUPT_CALLBACK_FUNCTION interrupt_callbacks[PEACHOS_TOTAL_INTERRUPTS];
 static ISR80H_COMMAND isr80h_commands[PEACHOS_MAX_ISR80H_COMMANDS];
 extern void int21h();
 extern void no_interrupt();
@@ -19,9 +24,14 @@ void no_interrupt_handler()
     outb(0x20, 0x20); // Send acknowledgment to the PIC
 }
 
-void int21h_handler()
+void interrupt_handler(int interrupt, struct interrupt_frame *frame)
 {
-    print("Keyboard interrupt received!\n");
+    kernel_page();
+    if (interrupt_callbacks[interrupt] != 0) {
+        task_current_save_state(frame);
+        interrupt_callbacks[interrupt]();
+    }
+    task_page();
     outb(0x20, 0x20); // Send acknowledgment to the PIC
 }
 
@@ -47,15 +57,23 @@ void idt_init()
     idtr_descriptor.base = (uint32_t)idt_descriptors;
 
     for (int i = 0; i < PEACHOS_TOTAL_INTERRUPTS; i++) {
-        idt_set(i, no_interrupt);
+        idt_set(i, interrupt_pointer_table[i]);
     }
 
     idt_set(0, idt_zero);
-    idt_set(0x21, int21h);
     idt_set(0x80, isr80h_wrapper);
 
     // Load the interrupt descriptor table
     idt_load(&idtr_descriptor);
+}
+
+int idt_register_interrupt_callback(int interrupt, INTERRUPT_CALLBACK_FUNCTION interrupt_callback)
+{
+    if (interrupt < 0 || interrupt >= PEACHOS_TOTAL_INTERRUPTS) {
+        return -EINVARG;
+    }
+    interrupt_callbacks[interrupt] = interrupt_callback;
+    return 0;
 }
 
 void isr80h_register_command(int command_id, ISR80H_COMMAND command)
